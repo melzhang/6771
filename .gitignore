@@ -1,3 +1,7 @@
-*.o
-*/main
-*/tut3
+*
+!makefile
+!Makefile
+!*.cpp
+!*.hpp
+!*.h
+!*.c
