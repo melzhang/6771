@@ -1,10 +1,11 @@
 *
+.DS_Store
 !makefile
 !Makefile
 !*.cpp
 !*.hpp
 !*.h
 !*.c
-!*mTutes
-!*nTutes
+!mTutes
+!nTutes
 !t*/
