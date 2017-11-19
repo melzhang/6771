@@ -13,9 +13,13 @@ public:
     height_ = height;
   }
 
-  unsigned int getArea() {
+  virtual unsigned int getArea() {
     std::cout << "Shape Area: " << '\n';
     return (width_ * height_);
+  }
+
+  virtual void print() {
+    std::cout << "Hello I am a shape! :)" << '\n';
   }
 
 protected:
@@ -29,9 +33,13 @@ public:
   Rectangle(unsigned int width=0, unsigned int height=0):
     Shape(width, height) {}
 
-  unsigned int getArea() {
+  unsigned int getArea() override {
     std::cout << "Rectangle Area: " << '\n';
     return (width_ * height_);
+  }
+
+  void print() override {
+    std::cout << "hello I am a Rectangle" << '\n';
   }
 };
 
@@ -47,6 +55,10 @@ int main() {
   std::cout << s1.getArea() << '\n';
   std::cout << r.getArea() << '\n';
   std::cout << r2.getArea() << '\n';
+
+  std::cout << "== test virtual ==" << '\n';
+  s1.print();
+  r.print();
 
 
   return 0;
