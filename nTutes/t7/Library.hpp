@@ -6,7 +6,7 @@
 // library to store objects of type T and descriptions of type U
 template <typename T, typename U>
 class Library {
-	
+
 public:
 	// mutators to change the contents of the library
 	void add(const T& item);
@@ -14,23 +14,23 @@ public:
 	void addRelated(const T& from, const T& to, const U& desc);
 	void printRelated(const T& from);
 	bool inLibrary(const T& item);
-	
+
 private:
 
-	// private inner class to hold objects of type T in the library. 
+	// private inner class to hold objects of type T in the library.
 	class ItemContainer {
 	public:
-		
+
 		// constructor for creating a new ItemContainer to store an item
 		ItemContainer(const T& item) : itemPtr{std::make_shared<T>(item)} {}
-		
+
 		const T& getItem() const { return *itemPtr; }
 		void addRelated(const ItemContainer& to, const U& desc);
 		std::shared_ptr<T> getItemPtr() const { return itemPtr; }
 		void printRelated();
-	
+
 	private:
-		
+
 		// private inner class to hold information about related works.
 		class RelatedWork {
 		public:
@@ -39,15 +39,15 @@ private:
 		private:
 			// private data members of RelatedWork
 			U relatedWorkDescription;
-			std::shared_ptr<T> relatedWorkLink;
+			std::weak_ptr<T> relatedWorkLink;
 		};
-	
-	
+
+
 		// private data members of ItemContainer
 		std::shared_ptr<T> itemPtr;
 		std::vector<RelatedWork> relatedWorks;
 	};
-	
+
 	// private data member of Library Class
 	std::vector<ItemContainer> items;
 };
@@ -55,14 +55,21 @@ private:
 // method to add a new item to the library.
 template <typename T, typename U>
 void Library<T,U>::add(const T& item) {
-	ItemContainer newItem{item};
-	items.push_back(newItem);
+  // need to check if doesn't exist in lib
+  auto ic = std::find_if(items.begin(), items.end(), [&item] (const ItemContainer& ic) {
+    return item == ic.getItem();
+  });
+  // create new item
+  if (ic == items.end()) {
+  	ItemContainer newItem{item};
+  	items.push_back(newItem);
+  }
 }
 
 // method to add a related works to an existing item
 template <typename T, typename U>
 void Library<T,U>::addRelated(const T& from, const T& to, const U& desc) {
-		// find from itemContainer. 
+		// find from itemContainer.
 		auto fromIC = std::find_if(items.begin(), items.end(), [&from] (const ItemContainer& ic) {
 			return from == ic.getItem();
 		});
@@ -74,17 +81,22 @@ void Library<T,U>::addRelated(const T& from, const T& to, const U& desc) {
 		fromIC->addRelated(*toIC,desc);
 }
 
-// method to remove an item from the library. 
+// method to remove an item from the library.
 template <typename T, typename U>
 unsigned int Library<T,U>::remove(const T& item) {
 	// TODO: remove the item from the library
-	return items.size();
+  // DONE
+  auto ic = std::find_if(items.begin(), items.end(), [&item] (const ItemContainer& ic) {
+    return item == ic.getItem();
+  });
+  items.erase(ic);
+  return items.size();
 }
 
-// method to print the related works for a given item. 
+// method to print the related works for a given item.
 template <typename T, typename U>
 void Library<T,U>::printRelated(const T& from) {
-	// find from itemContainer. 
+	// find from itemContainer.
 	auto fromIC = std::find_if(items.begin(), items.end(), [&from] (const ItemContainer& ic) {
 		return from == ic.getItem();
 	});
@@ -101,14 +113,14 @@ bool Library<T,U>::inLibrary(const T& item) {
 	return true;
 }
 
-// method to add a related works object to the item container. 
+// method to add a related works object to the item container.
 template <typename T, typename U>
 void Library<T,U>::ItemContainer::addRelated(const ItemContainer& to, const U& desc) {
 	RelatedWork rw{to,desc};
 	relatedWorks.push_back(rw);
 }
 
-// method to print each related item in a container. 
+// method to print each related item in a container.
 template <typename T, typename U>
 void Library<T,U>::ItemContainer::printRelated() {
 	for (auto related : relatedWorks) {
@@ -116,14 +128,19 @@ void Library<T,U>::ItemContainer::printRelated() {
 	}
 }
 
-// constructor for a related works object 
+// constructor for a related works object
 template <typename T, typename U>
 Library<T,U>::ItemContainer::RelatedWork::RelatedWork(const ItemContainer& link, const U& desc) : relatedWorkDescription{desc} {
 	relatedWorkLink = link.getItemPtr();
 }
 
-// method to print the item and description of a related work. 
+// method to print the item and description of a related work.
 template <typename T, typename U>
 void Library<T,U>::ItemContainer::RelatedWork::printItemAndDescription() {
-	std::cout << *(relatedWorkLink) << " - " << relatedWorkDescription << std::endl;
+  // need to work for weak pointer now
+	// std::cout << *(relatedWorkLink) << " - " << relatedWorkDescription << std::endl;
+  auto sp = relatedWorkLink.lock();
+  if (sp != nullptr) {
+    std::cout << *(sp) << " - " << relatedWorkDescription << std::endl;
+  }
 }
