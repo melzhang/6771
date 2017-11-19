@@ -31,25 +31,25 @@
 // }
 
 
-void g() {
-   throw std::string("something is wrong!");
-}
+// void g() {
+//    throw std::string("something is wrong!");
+// }
 
-void f() {
-   g();
-   std::cout << "never executed" << std::endl;;
-}
+// void f() {
+//    g();
+//    std::cout << "never executed" << std::endl;;
+// }
 
-int main() {
-   try {
-      f();
-   } catch (std::string &s) {
-      std::cout << s << std::endl;
-   } catch (...) { // this catches everything
+// int main() {
+//    try {
+//       f();
+//    } catch (std::string &s) {
+//       std::cout << s << std::endl;
+//    } catch (...) { // this catches everything
 
-   }
-   std::cout << "execution resumes from here" << std::endl;
-}
+//    }
+//    std::cout << "execution resumes from here" << std::endl;
+// }
 
 // RAII - resource acquisition is initialisation
 // encapsulate resources inside objects
@@ -68,3 +68,42 @@ int main() {
 // Basic exception - no leak guarantee
 // no exception
 
+
+#include <iostream>
+
+struct X {
+   X() { std::cout << "X() "; }
+};
+
+struct Y {
+   Y() { std::cout << "Y() "; }
+};
+
+class A{
+   X x;
+public:
+   A() { std::cout << "A() "; }
+};
+
+class B : public A {
+   Y y;
+public:
+   B() { std::cout << "B() "; }
+};
+
+int main() {
+   B b;
+}
+
+// finalisation: reverse order of initialisation
+// lifetime - period of time obj has memory allocated
+// heap obj: unnamed - lifetime determined by programmer
+
+int *p = new int[10]{}; // the {} initialises array to 0
+int *q = new std::string[5]{"hi"}; // initialises first, rest empty strings
+delete []p;
+delete []q;
+q = nullptr;
+p = nullptr;
+
+std::unique_ptr<type>
