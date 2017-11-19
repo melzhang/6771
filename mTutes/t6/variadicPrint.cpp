@@ -45,6 +45,24 @@ unsigned int printAndCountWholeNumbers(T head, U... tail) {
    return wHead + wTail;
 }
 
+template <typename T>
+unsigned int printAndCountWholeNumbers(const std::vector<T>& vd) {
+   unsigned int count = 0;
+   for (auto d : vd) {
+      auto dCopy = d;
+      // work out if d is a whole number
+      dCopy -= static_cast<int>(d);
+      if (dCopy == 0) {
+         // call: printIfWholeNumber
+         printIfWholeNumber(static_cast<int>(d));
+         std::cout << " ";
+         // and add to count.
+         count++;
+      }
+   }
+   return count;
+}
+
 int main() {
    // double a = 3.0;
    // long b = 2132;
@@ -65,8 +83,10 @@ int main() {
    std::vector<unsigned int> vui = {65, 343, 21, 3};
    dc = printAndCountWholeNumbers(vui);
    std::cout << "count = " << dc << std::endl;
-   
+
    // This code will compile and run, but it won't print out the correct number of whole numbers in either vector. Why?
+   // because 32.0 was static cast to an int
+
 
 
 }
