@@ -27,9 +27,28 @@ std::vector<std::pair<It, It>> divide_work(It begin, It end, unsigned n) {
 
 template <typename It, typename T>
 It find_parallel(It begin, It end, T value) {
-  (void)end;
-  (void)value;
-  return begin;
+  static_assert(std::is_same<typename std::iterator_traits<It>::iterator_category, std::random_access_iterator_tag>(), "requires random access");
+  // get number of cores
+  auto cores = std::thread::hardware_concurrency();
+  // work
+  auto work = divide_work(begin, end, cores);
+  // make vector
+  std::vector<std::thread> threads;
+
+  std::mutex m;
+  It found = end;
+  for (const auto& part : work)
+    threads.emplace_back([part, &value, &found, &m] () {
+        auto result = std::find(part.first, part.second, value);
+        if (result != part.second) {
+          std::lock_guard<std::mutex> lg{m};
+          found = std::min(found, result);
+        }
+    });
+  for (auto& thread : threads)
+    thread.join();
+
+  return found;
 }
 
 int main() {

@@ -4,12 +4,15 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <memory>
 
 class User {
 public:
-  bool is_admin() {
+  virtual bool is_admin() {
     return false;
   }
+
+  virtual ~User() = default;
 
   const std::string& get_username() const { return username; }
 
@@ -19,7 +22,7 @@ private:
 
 class Admin: public User {
 public:
-  bool is_admin() {
+  bool is_admin() override {
     return true;
   }
 
@@ -33,7 +36,8 @@ private:
 
 class Computer {
   auto get_user(const std::string& username) {
-    const auto username_match = [&username] (const auto& user) { return user.get_username() == username; };
+    const auto username_match = [&username] (const auto& user)
+    { return user->get_username() == username; };
     return std::find_if(users.begin(), users.end(), username_match);
   }
 
@@ -41,28 +45,30 @@ class Computer {
     auto user = get_user(username);
     if (user == users.end())
       return false;
-    current_user = &*user;
+    current_user = user->get();
     return true;
   }
 
   bool delete_user(const std::string& username) {
-    if (!current_user->is_admin())
+    if (current_user && !current_user->is_admin())
       return false;
-    users.erase(get_user(username));
-    return true;
+    auto user = get_user(username);
+    if (user != users.end())
+      users.erase(get_user(username));
+    return user != users.end();
   }
 
-  bool add_user(const User user) {
-    if (current_user->is_admin()) {
-      static_cast<Admin*>(current_user)->add_child(&user);
-      users.push_back(user);
+  bool add_user(User&& user) {
+    if (current_user && current_user->is_admin()) {
+      users.push_back(std::make_unique<User>(std::move(user)));
+      dynamic_cast<Admin*>(current_user)->add_child(users.back().get());
       return true;
     }
     return false;
   }
 
 private:
-  std::vector<User> users;
+  std::vector<std::unique_ptr<User>> users;
   User* current_user;
 };
 
